@@ -11,7 +11,9 @@
         // Default is to fail on error, no placeholder
         imagePlaceholder: undefined,
         // Default cache bust is false, it will use the cache
-        cacheBust: false
+        cacheBust: false,
+        // High DPI
+        scaleFactor: 1
     };
 
     var domtoimage = {
@@ -163,9 +165,16 @@
             var canvas = document.createElement('canvas');
             canvas.width = options.width || util.width(domNode);
             canvas.height = options.height || util.height(domNode);
+            canvas.style.width = canvas.width + 'px';
+            canvas.style.height = canvas.height + 'px';
+
+            // increase resolution
+            canvas.width = Math.ceil(canvas.width * options.scaleFactor);
+            canvas.height = Math.ceil(canvas.height * options.scaleFactor);
+            var ctx = canvas.getContext('2d');
+            ctx.scale(options.scaleFactor, options.scaleFactor);
 
             if (options.bgcolor) {
-                var ctx = canvas.getContext('2d');
                 ctx.fillStyle = options.bgcolor;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
@@ -465,7 +474,7 @@
             if(domtoimage.impl.options.cacheBust) {
                 // Cache bypass so we dont have CORS issues with cached images
                 // Source: https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest#Bypassing_the_cache
-                url += ((/\?/).test(url) ? "&" : "?") + (new Date()).getTime();
+                url += ((/\?/).test(url) ? "&" : "?") + 'q=' + (new Date()).getTime();
             }
 
             return new Promise(function (resolve) {
